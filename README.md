@@ -1,19 +1,33 @@
 # OpenRouter Rotation Model
 
-Dette repository indeholder en ZIP-pakke med den isolerede OpenRouter-rotationsmotor.
+Et selvstændigt Python/FastAPI-modul til OpenRouter-modelrotation, retries og failover.
 
-## Download
+## Download som ZIP
 
-Hent `openrouter-rotation-model.zip` fra repository-roden.
+Åbn repository-siden og vælg **Code → Download ZIP**. ZIP-downloaden indeholder kun rotationsmotoren og dens nødvendige driftsfiler.
 
-## Indhold
+## Funktioner
 
-- FastAPI gateway
-- Round-robin modelrotation
-- Failover og retries
-- OpenRouter-modelkatalog
-- Health checks
+- Round-robin rotation mellem modeller
+- Automatisk hentning af gratis OpenRouter-modeller
+- Rotation mellem flere API-keys
+- Retry ved timeout, 429 og 5xx
+- Midlertidig cooldown for fejlende routes
+- FastAPI-endpoints: `/api/chat`, `/v1/chat/completions`, `/api/models`, `/health`
 - Dockerfile og Render-konfiguration
-- Eksempler og test
 
-OpenRouter API-nøglen skal sættes via `.env` og er ikke inkluderet i ZIP-filen.
+## Start
+
+```bash
+cp .env.example .env
+pip install -r requirements.txt
+uvicorn llm_router.gateway:app --host 0.0.0.0 --port 8000
+```
+
+Sæt din nøgle i `.env`:
+
+```env
+OPENROUTER_API_KEY=sk-or-v1-...
+```
+
+API-nøgler er ikke inkluderet eller committed.
