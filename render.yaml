@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: rotation-chat
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_FREE_ONLY
+        value: "true"
+      - key: OPENROUTER_AUTO_DISCOVER
+        value: "true"
