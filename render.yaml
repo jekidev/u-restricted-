@@ -1,13 +1,19 @@
 services:
   - type: web
-    name: rotation-chat
+    name: u-restricted-chat
     runtime: docker
     plan: free
     healthCheckPath: /health
     envVars:
-      - key: OPENROUTER_API_KEY
+      - key: OPENROUTER_API_KEYS
+        sync: false
+      - key: ADMIN_TOKEN
         sync: false
       - key: OPENROUTER_FREE_ONLY
         value: "true"
       - key: OPENROUTER_AUTO_DISCOVER
         value: "true"
+      - key: OPENROUTER_MAX_TOKENS
+        value: "4000"
+      - key: OPENROUTER_TEMPERATURE
+        value: "0.9"
