@@ -120,7 +120,15 @@
   }
 
   async function fetchJson(path, opts = {}) {
-    const res = await fetch(path, opts);
+    const headers = { 'Content-Type': 'application/json' };
+    if (state.accessCode) headers.Authorization = `Bearer ${state.accessCode}`;
+    if (opts.headers) {
+      for (const [key, value] of Object.entries(opts.headers)) {
+        if (value === undefined || value === null) delete headers[key];
+        else headers[key] = value;
+      }
+    }
+    const res = await fetch(path, { ...opts, headers });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       const msg = body.detail?.error || body.detail || body.message || `HTTP ${res.status}`;
@@ -234,6 +242,27 @@
     } catch (e) {
       showToast(`Failed to delete: ${e.message}`, 'error');
     }
+  }
+
+  async function runHealthCheck() {
+    try {
+      const data = await fetchJson('/api/health/routes');
+      const lines = [
+        `Route health: ${data.ok ? 'OK' : 'DEGRADED'}`,
+        `Base URL: ${data.base_url}`,
+        `Timeout: ${data.timeout_seconds}s`,
+        `API keys: ${data.api_key_count}`,
+        `Models available: ${data.models_available}`,
+        `Routes in cooldown: ${data.routes_in_cooldown}`,
+      ];
+      if (Array.isArray(data.sample_models) && data.sample_models.length) {
+        lines.push(`Sample models: ${data.sample_models.join(', ')}`);
+      }
+      state.messages.push({ id: uuid(), role: 'system', content: lines.join('\n') });
+    } catch (e) {
+      state.messages.push({ id: uuid(), role: 'system', content: `Health check failed: ${e.message}` });
+    }
+    renderMessages();
   }
 
   function renderConversations() {
@@ -356,6 +385,9 @@
       if (emptyStateTemplate) {
         const empty = emptyStateTemplate.cloneNode(true);
         empty.style.display = 'flex';
+        empty.querySelectorAll('[data-prompt]').forEach((btn) => {
+          btn.addEventListener('click', () => sendMessage(btn.dataset.prompt));
+        });
         inner.appendChild(empty);
       }
       updateActiveModel('Awaiting model route');
@@ -466,6 +498,14 @@
   async function sendMessage(content) {
     if (state.isSending) return;
     if (!requireAuth()) return;
+
+    const trimmed = content.trim();
+    const lower = trimmed.toLowerCase();
+    if (lower === '/health' || lower === '/routes' || lower === 'tjek openrouter route-sundhed') {
+      await runHealthCheck();
+      return;
+    }
+
     if (!state.settings || state.settings.api_key_count === 0) {
       showToast('Add an OpenRouter API key in Settings first', 'error');
       setView('settings');

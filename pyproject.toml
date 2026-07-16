@@ -12,10 +12,11 @@ dependencies = [
     "fastapi>=0.115",
     "pydantic>=2.9",
     "uvicorn[standard]>=0.30",
+    "cryptography>=42.0.0,<45.0.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff"]
 
 [tool.setuptools.packages.find]
 include = ["llm_router*"]

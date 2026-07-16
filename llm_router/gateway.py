@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 import uuid
 from contextlib import asynccontextmanager
 from typing import Any
@@ -28,6 +29,15 @@ logging.basicConfig(
 log = logging.getLogger("gateway")
 
 ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN")
+
+
+def _require_admin_token(request: Request) -> None:
+    if not ADMIN_TOKEN:
+        return
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer ") or auth[7:] != ADMIN_TOKEN:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -152,6 +162,31 @@ async def health():
     }
 
 
+@app.get("/api/health/routes")
+async def route_health(request: Request):
+    if router is None:
+        raise HTTPException(status_code=503, detail="OpenRouter not configured")
+    _require_admin_token(request)
+    now = time.monotonic()
+    models = await router.models()
+    cooldowns = {
+        route: max(0, int(expires - now))
+        for route, expires in router._cooldowns.items()
+        if expires > now
+    }
+    return {
+        "ok": True,
+        "base_url": router.config.base_url,
+        "timeout_seconds": router.config.timeout_seconds,
+        "api_key_count": len(router.config.api_keys),
+        "models_available": len(models),
+        "sample_models": [m["id"] for m in models[:10]],
+        "routes_in_cooldown": len(cooldowns),
+        "cooldowns": cooldowns,
+        "failure_counts": dict(router._failure_counts),
+    }
+
+
 @app.get("/api/models")
 @app.get("/v1/models")
 async def get_models():
@@ -214,9 +249,15 @@ def _conversation_summary(c: Conversation) -> dict[str, Any]:
 
 
 @app.get("/api/conversations")
-async def list_conversations(q: str | None = None, limit: int = 100, offset: int = 0):
+async def list_conversations(
+    request: Request,
+    q: str | None = None,
+    limit: int = 100,
+    offset: int = 0,
+):
     if conversation_store is None:
         raise HTTPException(status_code=503, detail="Conversation store not ready")
+    _require_admin_token(request)
     if q:
         convs = await conversation_store.search(q, limit=limit)
     else:
@@ -225,9 +266,10 @@ async def list_conversations(q: str | None = None, limit: int = 100, offset: int
 
 
 @app.post("/api/conversations")
-async def create_conversation(payload: ConversationCreate):
+async def create_conversation(request: Request, payload: ConversationCreate):
     if conversation_store is None:
         raise HTTPException(status_code=503, detail="Conversation store not ready")
+    _require_admin_token(request)
     conv = await conversation_store.create(
         title=payload.title or "Untitled",
         system_prompt=payload.system_prompt,
@@ -236,9 +278,10 @@ async def create_conversation(payload: ConversationCreate):
 
 
 @app.get("/api/conversations/{conversation_id}")
-async def get_conversation(conversation_id: str):
+async def get_conversation(request: Request, conversation_id: str):
     if conversation_store is None:
         raise HTTPException(status_code=503, detail="Conversation store not ready")
+    _require_admin_token(request)
     conv = await conversation_store.get(conversation_id)
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -246,9 +289,10 @@ async def get_conversation(conversation_id: str):
 
 
 @app.delete("/api/conversations/{conversation_id}")
-async def delete_conversation(conversation_id: str):
+async def delete_conversation(request: Request, conversation_id: str):
     if conversation_store is None:
         raise HTTPException(status_code=503, detail="Conversation store not ready")
+    _require_admin_token(request)
     ok = await conversation_store.delete(conversation_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Conversation not found")

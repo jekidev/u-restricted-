@@ -1,13 +1,23 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import hashlib
 import json
+import logging
 import os
 import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger("gateway")
+
+try:
+    from cryptography.fernet import Fernet
+except ModuleNotFoundError:
+    Fernet = None  # type: ignore[misc, assignment]
 
 
 @dataclass(slots=True)
@@ -80,6 +90,7 @@ class ConversationStore:
         self._lock = asyncio.Lock()
         self._cache: dict[str, Conversation] = {}
         self._loaded = False
+        self._fernet = self._make_fernet(os.environ.get("CONVERSATION_ENCRYPTION_KEY"))
 
     async def _load(self) -> None:
         if self._loaded:
@@ -88,7 +99,8 @@ class ConversationStore:
             if self._loaded:
                 return
             try:
-                payload = json.loads(self.path.read_text(encoding="utf-8"))
+                text = self.path.read_text(encoding="utf-8")
+                payload = json.loads(self._decrypt(text))
                 for item in payload.get("conversations", []):
                     try:
                         conv = Conversation.from_dict(item)
@@ -106,7 +118,8 @@ class ConversationStore:
             "conversations": [c.to_dict() for c in self._cache.values()],
             "saved_at": time.time(),
         }
-        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        text = json.dumps(data, ensure_ascii=False, indent=2)
+        tmp.write_text(self._encrypt(text), encoding="utf-8")
         tmp.replace(self.path)
 
     async def create(
@@ -212,6 +225,35 @@ class ConversationStore:
             conv.updated_at = time.time()
             await self._save()
             return conv
+
+    def _make_fernet(self, raw_key: str | None) -> Any:
+        if not raw_key:
+            return None
+        if Fernet is None:
+            raise RuntimeError(
+                "cryptography is required when CONVERSATION_ENCRYPTION_KEY is set"
+            )
+        key = base64.urlsafe_b64encode(hashlib.sha256(raw_key.encode()).digest())
+        return Fernet(key)
+
+    def _encrypt(self, text: str) -> str:
+        if self._fernet is None:
+            return text
+        return self._fernet.encrypt(text.encode("utf-8")).decode("ascii")
+
+    def _decrypt(self, text: str) -> str:
+        if self._fernet is None:
+            return text
+        stripped = text.strip()
+        if stripped.startswith("{"):
+            logger.warning(
+                "Encryption key set but conversation store appears unencrypted; loading plain"
+            )
+            return text
+        try:
+            return self._fernet.decrypt(stripped.encode("ascii")).decode("utf-8")
+        except Exception as exc:
+            raise RuntimeError("Could not decrypt conversation store") from exc
 
     async def close(self) -> None:
         async with self._lock:
