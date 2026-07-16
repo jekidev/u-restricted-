@@ -19,6 +19,8 @@
     exports: [],
   };
 
+  let emptyStateTemplate = null;
+
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
@@ -351,12 +353,14 @@
     const inner = $('#chat-messages-inner');
     inner.innerHTML = '';
     if (state.messages.length === 0) {
-      inner.appendChild($('#empty-state'));
-      $('#empty-state').style.display = 'flex';
+      if (emptyStateTemplate) {
+        const empty = emptyStateTemplate.cloneNode(true);
+        empty.style.display = 'flex';
+        inner.appendChild(empty);
+      }
       updateActiveModel('Awaiting model route');
       return;
     }
-    $('#empty-state').style.display = 'none';
     for (const msg of state.messages) {
       inner.appendChild(createMessageElement(msg));
     }
@@ -739,6 +743,11 @@
   }
 
   function init() {
+    const originalEmpty = $('#empty-state');
+    if (originalEmpty) {
+      emptyStateTemplate = originalEmpty.cloneNode(true);
+      emptyStateTemplate.removeAttribute('id');
+    }
     loadLocal();
     $('#system-prompt').value = state.systemPrompt;
     updateAuthUI();

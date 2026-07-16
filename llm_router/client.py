@@ -45,12 +45,19 @@ class OpenRouterClient:
     async def aclose(self) -> None:
         await self._client.aclose()
 
-    def reconfigure(self, config: RouterConfig) -> None:
+    async def reconfigure(self, config: RouterConfig) -> None:
+        old_client = self._client
         self.config = config
         self._model_cache = []
         self._model_cache_time = 0
         self._cooldowns.clear()
         self._failure_counts.clear()
+        self._client = httpx.AsyncClient(
+            base_url=self.config.base_url,
+            timeout=httpx.Timeout(self.config.timeout_seconds, connect=15, read=45),
+            limits=httpx.Limits(max_keepalive_connections=10, max_connections=30),
+        )
+        await old_client.aclose()
 
     async def models(self, refresh: bool = False) -> list[dict[str, Any]]:
         now = time.monotonic()
@@ -67,11 +74,11 @@ class OpenRouterClient:
                         r
                         for r in rows
                         if all(
-                            float((r.get("pricing") or {}).get(k, 0)) == 0
+                            float((r.get("pricing") or {}).get(k) or 0) == 0
                             for k in ("prompt", "completion", "request")
                         )
                     ]
-                rows.sort(key=lambda r: int(r.get("context_length", 0)), reverse=True)
+                rows.sort(key=lambda r: int(r.get("context_length") or 0), reverse=True)
                 self._model_cache = rows[: self.config.model_limit]
                 self._model_cache_time = now
                 return self._model_cache
@@ -128,9 +135,10 @@ class OpenRouterClient:
                 if self._cooldowns.get(route, 0) > time.monotonic():
                     continue
                 if self._failure_counts.get(route, 0) >= self.config.failure_threshold:
-                    if route not in self._cooldowns or self._cooldowns[route] < time.monotonic():
-                        self._cooldowns[route] = time.monotonic() + self.config.cooldown_seconds * 2
-                    continue
+                    if self._cooldowns.get(route, 0) > time.monotonic():
+                        continue
+                    self._failure_counts[route] = 0
+                    self._cooldowns.pop(route, None)
 
                 for retry in range(self.config.max_retries_per_route + 1):
                     headers = {
@@ -222,9 +230,10 @@ class OpenRouterClient:
                 if self._cooldowns.get(route, 0) > time.monotonic():
                     continue
                 if self._failure_counts.get(route, 0) >= self.config.failure_threshold:
-                    if route not in self._cooldowns or self._cooldowns[route] < time.monotonic():
-                        self._cooldowns[route] = time.monotonic() + self.config.cooldown_seconds * 2
-                    continue
+                    if self._cooldowns.get(route, 0) > time.monotonic():
+                        continue
+                    self._failure_counts[route] = 0
+                    self._cooldowns.pop(route, None)
 
                 for retry in range(self.config.max_retries_per_route + 1):
                     headers = {

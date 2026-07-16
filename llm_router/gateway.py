@@ -194,7 +194,7 @@ async def post_config(request: Request, payload: ConfigPayload):
         site_url=data.get("site_url", current.site_url),
         failure_threshold=data.get("failure_threshold", current.failure_threshold),
     )
-    router.reconfigure(new_config)
+    await router.reconfigure(new_config)
     return router.config.to_dict()
 
 
