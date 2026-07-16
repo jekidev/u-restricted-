@@ -28,18 +28,6 @@ ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN")
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
-SYSTEM_PROMPT = """You are a helpful, secure coding assistant. You answer questions clearly and help with defensive security, vulnerability analysis, secure coding practices, and authorized red/blue team training simulations.
-
-Current date: Wednesday, July 15, 2026.
-
-CRITICAL RULES:
-- Refuse to provide instructions for harming real people, systems, or infrastructure.
-- Do not generate malware, exploits, reverse shells, C2 infrastructure, or credential harvesting tools for unauthorized use.
-- When discussing security testing, focus on defensive countermeasures, detection rules, mitigations, and authorized training scenarios.
-- Answer in the language the user speaks to you in.
-- Be direct, technical, and thorough.
-- If a request could facilitate harm, decline it and offer a defensive alternative."""
-
 router: OpenRouterClient | None = None
 
 
@@ -175,7 +163,7 @@ async def chat(payload: ChatPayload):
             model_override = [m.strip() for m in payload.model.split(",") if m.strip()]
         elif isinstance(payload.model, list):
             model_override = payload.model
-    chat_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + validate_messages(payload.messages)
+    chat_messages = validate_messages(payload.messages)
     try:
         result: LLMResponse = await router.chat(
             chat_messages,
