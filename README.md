@@ -4,12 +4,14 @@ En selvstændig Python/FastAPI chatbot med OpenRouter-modelrotation, retries og 
 
 ## Funktioner
 
+- Futuristisk HUD web-UI med 3D-agnostiske elementer og baggrund
 - Chat-grænseflade direkte i browseren (`/`)
 - Automatisk rotation mellem gratis OpenRouter-modeller
 - Multi-key rotation og failover
 - Retry ved timeout, 429 og 5xx
 - Midlertidig cooldown for fejlende routes
-- Settings-fane til API-nøgler, modeltilstand, temperatur og max tokens
+- Settings-fane til API-nøgler, modelvalg, temperatur og max tokens
+- Lokal samtalehistorik og arkiv i browseren
 - FastAPI-endpoints: `/api/chat`, `/v1/chat/completions`, `/api/models`, `/api/config`, `/health`
 - Dockerfile og Render-konfiguration
 
