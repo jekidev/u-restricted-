@@ -211,6 +211,14 @@
               <label for="admin-token">Admin token (if server requires it)</label>
               <input type="password" id="admin-token" class="hud-input" placeholder="Bearer token for /api/config" autocomplete="off">
             </div>
+            <div class="glass-block">
+              <div class="block-title">
+                <span class="hud-kicker">Behavior</span>
+              </div>
+              <label for="system-prompt">System prompt</label>
+              <textarea id="system-prompt" class="hud-input" rows="4" placeholder="Optional system instruction sent as the first message of every new transmission…"></textarea>
+              <p class="hint">Saved locally and sent with your next message. Leave empty to use no system prompt.</p>
+            </div>
             <div class="flex justify-end">
               <button type="button" class="hud-new-button" id="save-settings" style="width:auto; min-width:160px;">
                 <svg class="icon icon-4"><use href="#icon-radio"/></svg> Save route

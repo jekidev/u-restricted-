@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import time
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Any
 
@@ -194,3 +196,106 @@ class OpenRouterClient:
 
     async def ask(self, prompt: str, **kwargs: Any) -> LLMResponse:
         return await self.chat([{"role": "user", "content": prompt}], **kwargs)
+
+    async def stream(
+        self,
+        messages: list[dict[str, Any]],
+        *,
+        models: list[str] | None = None,
+        max_tokens: int | None = None,
+        temperature: float | None = None,
+        session_id: str | None = None,
+        extra_body: dict[str, Any] | None = None,
+    ) -> AsyncIterator[str]:
+        model_ids = await self._model_ids(models)
+        if not model_ids:
+            raise AllRoutesFailed([{"error": "No models available"}])
+
+        attempts: list[dict[str, Any]] = []
+        ordered_models = self._ordered(model_ids, self._model_index)
+        ordered_keys = self._ordered(self.config.api_keys, self._key_index)
+
+        for model in ordered_models:
+            for key in ordered_keys:
+                route = f"{model}:{key[-8:]}"
+
+                if self._cooldowns.get(route, 0) > time.monotonic():
+                    continue
+                if self._failure_counts.get(route, 0) >= self.config.failure_threshold:
+                    if route not in self._cooldowns or self._cooldowns[route] < time.monotonic():
+                        self._cooldowns[route] = time.monotonic() + self.config.cooldown_seconds * 2
+                    continue
+
+                for retry in range(self.config.max_retries_per_route + 1):
+                    headers = {
+                        "Authorization": f"Bearer {key}",
+                        "Content-Type": "application/json",
+                        "X-Title": self.config.app_name,
+                    }
+                    if self.config.site_url:
+                        headers["HTTP-Referer"] = self.config.site_url
+
+                    body: dict[str, Any] = {
+                        "model": model,
+                        "messages": messages,
+                        "stream": True,
+                        "max_tokens": max_tokens or self.config.max_tokens,
+                        "temperature": self.config.temperature if temperature is None else temperature,
+                    }
+                    if extra_body:
+                        body.update(extra_body)
+
+                    emitted = False
+                    try:
+                        async with self._client.stream("POST", "/chat/completions", headers=headers, json=body) as resp:
+                            if resp.status_code >= 400:
+                                err = (await resp.aread()).decode(errors="replace")[:500]
+                                raise httpx.HTTPStatusError(
+                                    f"status={resp.status_code} error={err}",
+                                    request=resp.request,
+                                    response=resp,
+                                )
+                            async for line in resp.aiter_lines():
+                                if not line.startswith("data: "):
+                                    continue
+                                data = line[6:]
+                                if data == "[DONE]":
+                                    break
+                                try:
+                                    chunk = json.loads(data)
+                                except json.JSONDecodeError:
+                                    continue
+                                token = (
+                                    ((chunk.get("choices") or [{}])[0].get("delta") or {})
+                                    .get("content")
+                                )
+                                if token:
+                                    emitted = True
+                                    yield token
+
+                        self._failure_counts[route] = 0
+                        self._model_index = (model_ids.index(model) + 1) % len(model_ids)
+                        self._key_index = (self.config.api_keys.index(key) + 1) % len(self.config.api_keys)
+                        self._log(f"Stream OK {model}")
+                        return
+
+                    except httpx.TimeoutException as exc:
+                        self._log(f"Timeout {route} ({retry + 1})")
+                        attempts.append({"model": model, "status": "timeout", "error": str(exc)})
+                    except httpx.HTTPStatusError as exc:
+                        s = exc.response.status_code
+                        self._log(f"HTTP {s} {route} ({retry + 1})")
+                        attempts.append({"model": model, "status": s, "error": str(exc)})
+                    except (httpx.RequestError, ValueError, KeyError) as exc:
+                        self._log(f"Error {route} ({retry + 1}): {exc}")
+                        attempts.append({"model": model, "status": "error", "error": str(exc)})
+
+                    if emitted:
+                        raise AllRoutesFailed(attempts)
+                    if retry < self.config.max_retries_per_route:
+                        await asyncio.sleep(1.0 * (2**retry))
+
+                self._failure_counts[route] = self._failure_counts.get(route, 0) + 1
+                self._cooldowns[route] = time.monotonic() + self.config.cooldown_seconds
+
+        raise AllRoutesFailed(attempts)
