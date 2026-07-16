@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // CHAT — OpenRouter Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <svg style="display:none;" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="icon-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+      <symbol id="icon-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+      <symbol id="icon-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+      <symbol id="icon-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+      <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+      <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></symbol>
+      <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+      <symbol id="icon-log-in" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></symbol>
+      <symbol id="icon-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+      <symbol id="icon-shield-check" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 12,15 16,10"/></symbol>
+      <symbol id="icon-bot" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><circle cx="8" cy="16" r="1.2"/><circle cx="16" cy="16" r="1.2"/><path d="M9 20h6"/></symbol>
+      <symbol id="icon-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+      <symbol id="icon-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></symbol>
+      <symbol id="icon-stop" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></symbol>
+      <symbol id="icon-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+      <symbol id="icon-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+      <symbol id="icon-file-text" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></symbol>
+      <symbol id="icon-sliders" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></symbol>
+      <symbol id="icon-archive" viewBox="0 0 24 24"><polyline points="21,8 21,21 3,21 3,8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></symbol>
+      <symbol id="icon-chevron-right" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></symbol>
+      <symbol id="icon-radio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.48M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14M7.76 7.76a6 6 0 0 0 0 8.48"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="hud-grid"></div>
+  <div class="hud-scanlines"></div>
+  <div class="hud-vignette"></div>
+  <div class="edge-rail edge-rail-left"></div>
+  <div class="edge-rail edge-rail-right"></div>
+
+  <header class="app-header">
+    <div class="header-left">
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
+        <svg class="icon icon-4"><use href="#icon-menu"/></svg>
+      </button>
+      <div class="logo-cube"><img src="/static/logo.jpg" alt=""></div>
+      <div class="min-w-0">
+        <p class="brand-title">NEXUS // CHAT</p>
+        <p class="brand-subtitle">OPENROUTER TERMINAL</p>
+      </div>
+    </div>
+    <nav class="header-nav" aria-label="Main navigation">
+      <button class="hud-tab hud-tab-active" data-view="chat" aria-pressed="true">
+        <svg class="icon icon-4"><use href="#icon-message"/></svg> Chat
+      </button>
+      <button class="hud-tab" data-view="settings" aria-pressed="false">
+        <svg class="icon icon-4"><use href="#icon-settings"/></svg> Settings
+      </button>
+      <button class="hud-tab" data-view="files" aria-pressed="false">
+        <svg class="icon icon-4"><use href="#icon-folder"/></svg> Files
+      </button>
+    </nav>
+    <div class="header-right">
+      <div class="user-status">
+        <p class="user-name truncate" id="user-name">Guest operator</p>
+        <p class="user-state" id="user-state">OFFLINE</p>
+      </div>
+      <button class="hud-icon-button" id="auth-btn" aria-label="Login">
+        <svg class="icon icon-4" id="auth-icon"><use href="#icon-log-in"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <button class="hud-new-button" id="new-convo">
+          <svg class="icon icon-4"><use href="#icon-plus"/></svg> New transmission
+        </button>
+        <div class="search-box">
+          <input type="text" id="search-input" class="hud-input" placeholder="Search transmissions...">
+          <button class="hud-icon-button" id="search-btn" aria-label="Search">
+            <svg class="icon icon-4"><use href="#icon-search"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">
+          <span class="hud-kicker">Signal History</span>
+          <span class="text-white-28" id="conv-count">0</span>
+        </div>
+        <div class="sidebar-list" id="conversation-list"></div>
+      </div>
+      <div class="sidebar-footer">
+        <span class="status-pulse"></span>
+        <span>KEYS ENCRYPTED AT REST</span>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <main class="main">
+      <section class="view active" id="chat-view" aria-label="Chat">
+        <div class="hud-panel chat-panel">
+          <div class="hud-corner hud-corner-tl"></div>
+          <div class="hud-corner hud-corner-br"></div>
+          <header class="chat-header">
+            <div class="chat-title">
+              <span class="status-pulse"></span>
+              <div class="min-w-0">
+                <p class="hud-kicker">Live Channel</p>
+                <p class="chat-model" id="active-model">Awaiting model route</p>
+              </div>
+            </div>
+            <div class="chat-actions">
+              <button class="export-chip" data-export="md" aria-label="Export as Markdown">
+                <svg class="icon icon-4"><use href="#icon-download"/></svg> MD
+              </button>
+              <button class="export-chip" data-export="json" aria-label="Export as JSON">
+                <svg class="icon icon-4"><use href="#icon-download"/></svg> JSON
+              </button>
+            </div>
+          </header>
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-messages-inner" id="chat-messages-inner">
+              <div class="empty-state" id="empty-state">
+                <div class="empty-orb">
+                  <svg class="icon icon-7"><use href="#icon-bot"/></svg>
+                </div>
+                <h2 class="empty-title">Neural Link Ready</h2>
+                <p class="empty-subtitle">Open a secure transmission. Auto mode rotates through the compatible free-model catalogue.</p>
+                <div class="suggested-prompts">
+                  <button class="hud-mini-button" data-prompt="Design a precise launch plan">
+                    <span class="text-white-28">›</span> Design a precise launch plan
+                  </button>
+                  <button class="hud-mini-button" data-prompt="Explain a complex system simply">
+                    <span class="text-white-28">›</span> Explain a complex system simply
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <form class="chat-input-area" id="chat-form">
+            <div class="input-wrap">
+              <textarea id="chat-input" rows="1" placeholder="Enter transmission…"></textarea>
+              <button type="submit" class="hud-send-button" id="send-btn" aria-label="Send">
+                <svg class="icon icon-5"><use href="#icon-send"/></svg>
+              </button>
+              <button type="button" class="hud-send-button hidden" id="stop-btn" aria-label="Stop">
+                <svg class="icon icon-5"><use href="#icon-stop"/></svg>
+              </button>
+            </div>
+            <div class="input-hint">
+              <span>SHIFT + ENTER / NEW LINE</span>
+              <span class="flex items-center gap-2">
+                <svg class="icon icon-4 hidden" id="loading-icon"><use href="#icon-loader"/></svg>
+                <span id="link-status">ENCRYPTED LINK</span>
+              </span>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="view" id="settings-view" aria-label="Settings">
+        <div class="hud-panel settings-panel">
+          <div class="hud-corner hud-corner-tl"></div>
+          <div class="settings-header">
+            <div class="settings-icon">
+              <svg class="icon icon-5"><use href="#icon-sliders"/></svg>
+            </div>
+            <div>
+              <p class="hud-kicker">System Configuration</p>
+              <h1 class="settings-title">Routing Matrix</h1>
+            </div>
+          </div>
+          <div class="settings-body">
+            <div class="glass-block">
+              <div class="block-title">
+                <span class="hud-kicker">Access Token</span>
+                <span class="status-badge" id="key-badge">PENDING</span>
+              </div>
+              <label for="api-key">OpenRouter API key</label>
+              <input type="password" id="api-key" class="hud-input" placeholder="sk-or-v1-…" autocomplete="off">
+              <p class="hint">The key is sent to the server and stored in memory only. If the server already has a key, leave this blank to keep it.</p>
+            </div>
+            <div class="glass-block">
+              <div class="block-title">
+                <span class="hud-kicker">Model Route</span>
+              </div>
+              <label for="model-select">Active model</label>
+              <select id="model-select" class="hud-select">
+                <option value="auto">AUTO — ROUND ROBIN + FAILOVER</option>
+              </select>
+              <p class="hint" id="models-hint">Select a model or leave auto. The list refreshes when an API key is configured.</p>
+            </div>
+            <div class="grid-2">
+              <div class="glass-block">
+                <label for="temperature">Temperature</label>
+                <input type="number" id="temperature" class="hud-input" min="0" max="2" step="0.1" value="0.9">
+              </div>
+              <div class="glass-block">
+                <label for="max-tokens">Max tokens</label>
+                <input type="number" id="max-tokens" class="hud-input" min="100" max="16000" step="100" value="4000">
+              </div>
+            </div>
+            <div class="glass-block">
+              <label for="admin-token">Admin token (if server requires it)</label>
+              <input type="password" id="admin-token" class="hud-input" placeholder="Bearer token for /api/config" autocomplete="off">
+            </div>
+            <div class="glass-block">
+              <div class="block-title">
+                <span class="hud-kicker">Behavior</span>
+              </div>
+              <label for="system-prompt">System prompt</label>
+              <textarea id="system-prompt" class="hud-input" rows="4" placeholder="Optional system instruction sent as the first message of every new transmission…"></textarea>
+              <p class="hint">Saved locally and sent with your next message. Leave empty to use no system prompt.</p>
+            </div>
+            <div class="flex justify-end">
+              <button type="button" class="hud-new-button" id="save-settings" style="width:auto; min-width:160px;">
+                <svg class="icon icon-4"><use href="#icon-radio"/></svg> Save route
+              </button>
+            </div>
+            <div id="settings-success" class="success-msg hidden"></div>
+            <div id="settings-error" class="error-msg hidden"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="files-view" aria-label="Files">
+        <div class="hud-panel files-panel">
+          <div class="hud-corner hud-corner-br"></div>
+          <div class="settings-header">
+            <div class="settings-icon">
+              <svg class="icon icon-5"><use href="#icon-archive"/></svg>
+            </div>
+            <div>
+              <p class="hud-kicker">Persistent Storage</p>
+              <h1 class="settings-title">Files &amp; Archive</h1>
+            </div>
+          </div>
+          <div class="files-grid">
+            <div class="glass-block">
+              <div class="file-section-title">
+                <span class="hud-kicker">Saved Conversations</span>
+                <span class="text-white-28" id="saved-count">0</span>
+              </div>
+              <div class="file-grid" id="files-conversations"></div>
+            </div>
+            <div class="glass-block">
+              <div class="file-section-title">
+                <span class="hud-kicker">Generated Exports</span>
+                <span class="text-white-28" id="export-count">0</span>
+              </div>
+              <div id="files-exports" class="grid gap-2"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="login-modal" id="login-modal">
+    <div class="login-box">
+      <h2>Neural Link Verification</h2>
+      <p>Enter access code to initialize transmission.</p>
+      <input type="password" id="access-code" class="hud-input" placeholder="Access code" autocomplete="off">
+      <button class="hud-new-button" id="verify-code" style="width:100%; margin-top:1rem;">Verify Access</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
