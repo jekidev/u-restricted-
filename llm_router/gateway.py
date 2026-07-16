@@ -169,11 +169,8 @@ async def route_health(request: Request):
     _require_admin_token(request)
     now = time.monotonic()
     models = await router.models()
-    cooldowns = {
-        route: max(0, int(expires - now))
-        for route, expires in router._cooldowns.items()
-        if expires > now
-    }
+    routes_in_cooldown = sum(1 for v in router._cooldowns.values() if v > now)
+    routes_failed = sum(router._failure_counts.values())
     return {
         "ok": True,
         "base_url": router.config.base_url,
@@ -181,9 +178,8 @@ async def route_health(request: Request):
         "api_key_count": len(router.config.api_keys),
         "models_available": len(models),
         "sample_models": [m["id"] for m in models[:10]],
-        "routes_in_cooldown": len(cooldowns),
-        "cooldowns": cooldowns,
-        "failure_counts": dict(router._failure_counts),
+        "routes_in_cooldown": routes_in_cooldown,
+        "routes_failed": routes_failed,
     }
 
 

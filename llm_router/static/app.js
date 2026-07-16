@@ -249,11 +249,12 @@
       const data = await fetchJson('/api/health/routes');
       const lines = [
         `Route health: ${data.ok ? 'OK' : 'DEGRADED'}`,
-        `Base URL: ${data.base_url}`,
-        `Timeout: ${data.timeout_seconds}s`,
-        `API keys: ${data.api_key_count}`,
-        `Models available: ${data.models_available}`,
-        `Routes in cooldown: ${data.routes_in_cooldown}`,
+        `Base URL: ${data.base_url || 'N/A'}`,
+        `Timeout: ${data.timeout_seconds != null ? `${data.timeout_seconds}s` : 'N/A'}`,
+        `API keys: ${data.api_key_count != null ? data.api_key_count : 'N/A'}`,
+        `Models available: ${data.models_available != null ? data.models_available : 'N/A'}`,
+        `Routes in cooldown: ${data.routes_in_cooldown != null ? data.routes_in_cooldown : 'N/A'}`,
+        `Routes failed: ${data.routes_failed != null ? data.routes_failed : 'N/A'}`,
       ];
       if (Array.isArray(data.sample_models) && data.sample_models.length) {
         lines.push(`Sample models: ${data.sample_models.join(', ')}`);
